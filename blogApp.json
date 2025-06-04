@@ -1,0 +1,16 @@
+
+    "url": "",
+    "endpoints": {
+        "register": "user/register",
+        "login": "user/login",
+        "get-user-profile": "user/me",
+        "new-post": "POST - post/",
+        "get-all-posts": "GET - post/",
+        "get-post-by-id": "GET - post/:id",
+        "update-post-by-id": "PUT - post/:id",
+        "delete-post-by-id": "DELETE - post/:id",
+        "add-comment": "POST - comment/:id",
+        "get-all-comments": "GET - comment/:id",
+        "delete-comment": "DELETE - comment/:id",
+    }
+}
