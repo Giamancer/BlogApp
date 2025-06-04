@@ -8,6 +8,13 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Editing state
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+
   useEffect(() => {
     if (!user) return;
 
@@ -28,7 +35,6 @@ const Profile = () => {
         const data = await response.json();
         const allPosts = data.posts || data;
 
-        // Convert both IDs to string before comparing
         const myPosts = allPosts.filter(post => post.author?.email === user.email);
         setUserPosts(myPosts);
       } catch (err) {
@@ -58,9 +64,62 @@ const Profile = () => {
       }
 
       setUserPosts((prev) => prev.filter((post) => post._id !== postId));
+      // If deleting post currently being edited, reset edit state
+      if (editingPostId === postId) {
+        setEditingPostId(null);
+        setEditError('');
+        setEditTitle('');
+        setEditContent('');
+      }
     } catch (err) {
       console.error('Delete post error:', err);
       alert('Failed to delete post');
+    }
+  };
+
+  const startEditing = (post) => {
+    setEditingPostId(post._id);
+    setEditTitle(post.title);
+    setEditContent(post.content);
+    setEditError('');
+  };
+
+  const cancelEditing = () => {
+    setEditingPostId(null);
+    setEditError('');
+  };
+
+  const handleUpdatePost = async (postId) => {
+    setEditLoading(true);
+    setEditError('');
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/post/${postId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title: editTitle, content: editContent }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to update post');
+      }
+
+      const updatedPost = await response.json();
+
+      setUserPosts((prevPosts) =>
+        prevPosts.map((post) => (post._id === postId ? updatedPost : post))
+      );
+      setEditingPostId(null);
+    } catch (err) {
+      setEditError(err.message);
+      console.error('Update post error:', err);
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -95,7 +154,7 @@ const Profile = () => {
                   <p className="mb-0">{user?.email || 'No email provided'}</p>
                 </div>
                 <div className="col-md-4 text-md-end mt-3 mt-md-0">
-                  <Link to="/add-post" className="btn btn-primary">
+                  <Link to="/create-post" className="btn btn-primary">
                     + Add New Post
                   </Link>
                 </div>
@@ -121,27 +180,71 @@ const Profile = () => {
               {userPosts.map((post) => (
                 <li
                   key={post._id}
-                  className="list-group-item d-flex justify-content-between align-items-center"
+                  className="list-group-item d-flex flex-column"
                 >
-                  <Link to={`/post/${post._id}`} className="text-decoration-none">
-                    <strong>{post.title}</strong> <br />
-                    <small className="text-muted">{formatDate(post.createdAt)}</small>
-                  </Link>
-
-                  <div>
-                    <Link
-                      to={`/edit-post/${post._id}`}
-                      className="btn btn-sm btn-outline-secondary me-2"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => handleDeletePost(post._id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {editingPostId === post._id ? (
+                    <>
+                      <input
+                        type="text"
+                        className="form-control mb-2"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        disabled={editLoading}
+                      />
+                      <textarea
+                        className="form-control mb-2"
+                        rows="4"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        disabled={editLoading}
+                      />
+                      {editError && (
+                        <div className="alert alert-danger">{editError}</div>
+                      )}
+                      <div>
+                        <button
+                          className="btn btn-success me-2"
+                          onClick={() => handleUpdatePost(post._id)}
+                          disabled={editLoading}
+                        >
+                          {editLoading ? 'Updating...' : 'Save'}
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          onClick={cancelEditing}
+                          disabled={editLoading}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div>
+                        <Link
+                          to={`/post/${post._id}`}
+                          className="text-decoration-none"
+                        >
+                          <strong>{post.title}</strong> <br />
+                          <small className="text-muted">{formatDate(post.createdAt)}</small>
+                        </Link>
+                      </div>
+                      <div>
+                        <button
+                          className="btn btn-sm btn-outline-secondary me-2"
+                          onClick={() => startEditing(post)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => handleDeletePost(post._id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

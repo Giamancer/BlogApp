@@ -55,7 +55,7 @@ const Home = () => {
     <div>
       <div className="row mb-4">
         <div className="col">
-          <h1 className="display-4 mb-3">Welcome to BlogApp</h1>
+          <h1 className="display-4 mb-3">Welcome to Gia's BlogApp</h1>
           <p className="lead text-muted">
             Discover amazing stories and share your thoughts with the community.
           </p>
@@ -91,6 +91,8 @@ const Home = () => {
                   <small className="text-muted">
                     By {post.author?.username || 'Unknown'} • {formatDate(post.createdAt)}
                   </small>
+                  <br />
+                  <small className="text-muted">Post ID: {post._id || post.id}</small>
                 </div>
               </div>
             </div>

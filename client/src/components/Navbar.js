@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -6,9 +6,52 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const [postId, setPostId] = useState('');
+  const [searchError, setSearchError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!postId.trim()) {
+      setSearchError('Please enter a Post ID to search.');
+      return;
+    }
+
+    setLoading(true);
+    setSearchError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/post/${postId.trim()}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setSearchError('Post not found.');
+        } else {
+          setSearchError('Failed to fetch post.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      const post = await response.json();
+
+      navigate(`/post/${post._id}`);
+      setPostId('');
+    } catch (err) {
+      console.error('Search error:', err);
+      setSearchError('An error occurred during search.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,18 +76,46 @@ const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/">
-                Home
+              <Link className="nav-link" to="/create-post">
+                Create Post
               </Link>
             </li>
-            {user && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/create-post">
-                  Create Post
-                </Link>
-              </li>
-            )}
           </ul>
+
+          {/* Search by Post ID */}
+          <form
+            onSubmit={handleSearchSubmit}
+            className="d-flex align-items-center me-3"
+            style={{ gap: '0.5rem', flexWrap: 'nowrap', color: 'white' }}
+          >
+            <label
+              htmlFor="postIdSearch"
+              className="mb-0 me-2"
+              style={{ color: 'white', whiteSpace: 'nowrap' }}
+            >
+              Find Post by ID:
+            </label>
+            <input
+              id="postIdSearch"
+              type="text"
+              placeholder="Post ID"
+              value={postId}
+              onChange={(e) => setPostId(e.target.value)}
+              className="form-control form-control-sm"
+              style={{ minWidth: '150px' }}
+              required
+            />
+            <button
+              className="btn btn-sm btn-primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? 'Searching...' : 'Search'}
+            </button>
+            {searchError && (
+              <div className="text-danger small ms-3">{searchError}</div>
+            )}
+          </form>
 
           <ul className="navbar-nav">
             {user ? (

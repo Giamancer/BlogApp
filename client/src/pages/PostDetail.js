@@ -29,6 +29,8 @@ const PostDetail = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch comments');
       const data = await response.json();
+
+      // If your API returns { comments: [...] }, else array directly
       setComments(data.comments || data || []);
     } catch (err) {
       console.error('Fetch comments error:', err);
@@ -62,14 +64,10 @@ const PostDetail = () => {
     fetchComments();
   }, [id, fetchComments, token]);
 
-  // Permission logic
   const isAuthor = user && post && post.author?.email === user.email;
   const isAdmin = user?.isAdmin;
 
-  // canEdit: user authored the post
   const canEdit = isAuthor;
-
-  // canDelete: user authored the post OR is admin
   const canDelete = isAuthor || isAdmin;
 
   const handleDeletePost = async () => {
@@ -89,7 +87,7 @@ const PostDetail = () => {
       }
 
       alert('Post deleted successfully.');
-      navigate('/'); // redirect after delete
+      navigate('/');
     } catch (err) {
       console.error('Delete post error:', err);
       alert('Failed to delete post: ' + err.message);
@@ -101,7 +99,7 @@ const PostDetail = () => {
     setEditLoading(true);
     setEditError('');
 
-    // Prevent admin from editing posts they don't own (extra safety)
+    // Extra safety: Admins can't edit posts they don't own
     if (isAdmin && !isAuthor) {
       setEditError("Admins can't edit posts they don't own.");
       setEditLoading(false);
@@ -124,10 +122,12 @@ const PostDetail = () => {
       }
 
       const updatedPost = await response.json();
-      if (!updatedPost.author) {
-        updatedPost.author = post.author; // keep old author info if not returned
-      }
-      setPost(updatedPost);
+      // Keep author info in case not returned
+      const updatedWithAuthor = {
+        ...updatedPost,
+        author: updatedPost.author || post.author,
+      };
+      setPost(updatedWithAuthor);
       setIsEditing(false);
       alert('Post updated successfully.');
     } catch (err) {
@@ -211,7 +211,6 @@ const PostDetail = () => {
     <div className="container mt-4">
       {isEditing ? (
         <>
-          {/* Prevent admin from editing others' posts by disabling form and showing message */}
           {isAdmin && !isAuthor ? (
             <div className="alert alert-warning">
               Admins cannot edit posts they do not own.
@@ -231,7 +230,7 @@ const PostDetail = () => {
               <div className="mb-3">
                 <textarea
                   className="form-control"
-                  rows="5"
+                  rows={5}
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   disabled={editLoading}
@@ -261,11 +260,24 @@ const PostDetail = () => {
       ) : (
         <>
           <h2>{post.title}</h2>
+
+          <div className="mb-3 text-muted small">
+            <span>By <strong>{post.author?.username || post.author?.email || 'Unknown'}</strong></span>
+            <span className="mx-2">|</span>
+            <span>
+              Last updated:{' '}
+              {post.updatedAt
+                ? new Date(post.updatedAt).toLocaleString()
+                : 'N/A'}
+            </span>
+            <span className="mx-2">|</span>
+            <span>Post ID: {post._id || post.id}</span>
+          </div>
+
           <p className="mb-4">{post.content}</p>
 
           {(canEdit || canDelete) && (
             <div className="mb-3">
-              {/* Show Edit only if canEdit */}
               {canEdit && (
                 <button
                   className="btn btn-primary me-2"
@@ -274,7 +286,6 @@ const PostDetail = () => {
                   Edit Post
                 </button>
               )}
-              {/* Show Delete if canDelete */}
               {canDelete && (
                 <button
                   className="btn btn-danger"
@@ -286,7 +297,6 @@ const PostDetail = () => {
             </div>
           )}
 
-          {/* Comments */}
           <h3>Comments</h3>
           {comments.length === 0 && <p>No comments yet.</p>}
           <ul className="list-group mb-4">
@@ -313,26 +323,30 @@ const PostDetail = () => {
           </ul>
 
           {/* Add comment form */}
-          <form onSubmit={handleAddComment}>
-            <div className="mb-3">
-              <textarea
-                className="form-control"
-                placeholder="Write a comment..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                rows="3"
+          {user ? (
+            <form onSubmit={handleAddComment}>
+              <div className="mb-3">
+                <textarea
+                  className="form-control"
+                  placeholder="Write a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  rows={3}
+                  disabled={commentLoading}
+                />
+              </div>
+              {commentError && <div className="alert alert-danger">{commentError}</div>}
+              <button
+                type="submit"
+                className="btn btn-primary"
                 disabled={commentLoading}
-              ></textarea>
-            </div>
-            {commentError && <div className="alert alert-danger">{commentError}</div>}
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={commentLoading}
-            >
-              {commentLoading ? 'Posting...' : 'Add Comment'}
-            </button>
-          </form>
+              >
+                {commentLoading ? 'Posting...' : 'Add Comment'}
+              </button>
+            </form>
+          ) : (
+            <p>Please log in to add a comment.</p>
+          )}
         </>
       )}
     </div>
