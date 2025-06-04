@@ -8,6 +8,7 @@ const CreatePost = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -22,6 +23,7 @@ const CreatePost = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       const token = localStorage.getItem('token');
@@ -35,14 +37,23 @@ const CreatePost = () => {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+      console.log('Create Post Response:', data); // Optional for debugging
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create post');
+        throw new Error(data.message || 'Failed to create post');
       }
 
-      const data = await response.json();
-      navigate(`/post/${data.post._id}`);
+      const postId = data._id || (data.post && data.post._id);
 
+      if (postId) {
+        setSuccessMessage('Post created successfully! Redirecting...');
+        setTimeout(() => {
+          navigate(`/post/${postId}`);
+        }, 1500);
+      } else {
+        throw new Error('Post created but no ID returned.');
+      }
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -59,6 +70,12 @@ const CreatePost = () => {
             {error && (
               <div className="alert alert-danger" role="alert">
                 {error}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="alert alert-success" role="alert">
+                {successMessage}
               </div>
             )}
 

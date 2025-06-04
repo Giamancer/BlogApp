@@ -53,6 +53,10 @@ exports.updatePost = async (req, res, next) => {
         post.content = req.body.content || post.content;
 
         await post.save();
+
+        // Populate author after saving
+        const updatedPost = await Post.findById(post._id).populate("author");
+
         res.json(post);
     } catch (err) {
         next(err);

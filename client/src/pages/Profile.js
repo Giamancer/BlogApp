@@ -28,8 +28,8 @@ const Profile = () => {
         const data = await response.json();
         const allPosts = data.posts || data;
 
-        // Make sure user._id exists for filtering
-        const myPosts = allPosts.filter(post => post.author?._id === user._id);
+        // Convert both IDs to string before comparing
+        const myPosts = allPosts.filter(post => post.author?.email === user.email);
         setUserPosts(myPosts);
       } catch (err) {
         setError('Failed to fetch your posts');
@@ -57,7 +57,7 @@ const Profile = () => {
         throw new Error('Failed to delete post');
       }
 
-      setUserPosts((prev) => prev.filter(post => post._id !== postId));
+      setUserPosts((prev) => prev.filter((post) => post._id !== postId));
     } catch (err) {
       console.error('Delete post error:', err);
       alert('Failed to delete post');
