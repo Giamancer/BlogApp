@@ -3,6 +3,10 @@
 ### About the app
 - Simple MERN Blog fullstack setup by Gia Catimbang.
 
+### URL
+- Backend: https://blogapp-api-a84w.onrender.com
+- Frontend: https://blog-app-orpin-six.vercel.app/
+
 ## Account Details:
 
 | Account Type | Email                | Password   |

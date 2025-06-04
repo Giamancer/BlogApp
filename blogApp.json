@@ -1,5 +1,5 @@
 
-    "url": "",
+    "url": "https://blog-app-orpin-six.vercel.app/",
     "endpoints": {
         "register": "user/register",
         "login": "user/login",
