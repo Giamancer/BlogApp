@@ -26,7 +26,7 @@ const CreatePost = () => {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch('/post', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/post`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

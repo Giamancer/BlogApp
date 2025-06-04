@@ -12,7 +12,7 @@ export const useAuth = () => {
 };
 
 // Configure axios defaults
-axios.defaults.baseURL = 'http://localhost:4000';
+axios.defaults.baseURL = `${process.env.REACT_APP_API_BASE_URL}`;
 axios.defaults.withCredentials = true;
 
 export const AuthProvider = ({ children }) => {
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get('/user/me');
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/user/me`);
       setUser(response.data.user);
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/user/login', { email, password });
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/user/login`, { email, password });
       const { token, user: userData } = response.data;
       
       localStorage.setItem('token', token);
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      const response = await axios.post('/user/register', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/user/register`, {
         username,
         email,
         password

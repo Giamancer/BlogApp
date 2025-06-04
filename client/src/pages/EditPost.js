@@ -19,7 +19,7 @@ const EditPost = () => {
     const fetchPost = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`/post/${id}`, {
+        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/post/${id}`, {
           headers: {
             ...(token && { Authorization: `Bearer ${token}` }),
           },
@@ -67,7 +67,7 @@ const EditPost = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/post/${id}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/post/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

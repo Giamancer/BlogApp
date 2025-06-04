@@ -12,7 +12,7 @@ const Home = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await fetch('/post');
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/post`);
       if (!res.ok) {
         throw new Error('Failed to fetch posts');
       }

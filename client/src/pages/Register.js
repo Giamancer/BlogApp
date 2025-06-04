@@ -43,16 +43,17 @@ const Register = () => {
     }
 
     const result = await register(formData.username, formData.email, formData.password);
-    
+
     if (result.success) {
       setSuccess(result.message);
       setTimeout(() => {
+        // Navigate to your app’s /login route, NOT backend URL
         navigate('/login');
       }, 2000);
     } else {
       setError(result.message);
     }
-    
+
     setLoading(false);
   };
 
@@ -62,7 +63,7 @@ const Register = () => {
         <div className="card shadow">
           <div className="card-body p-4">
             <h2 className="card-title text-center mb-4">Create Account</h2>
-            
+
             {error && (
               <div className="alert alert-danger" role="alert">
                 {error}
