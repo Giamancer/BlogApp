@@ -26,9 +26,7 @@ const app = express();
 const corsOptions = {
   origin: [
     "http://localhost:3000",
-    // Add your deployed frontend URLs here, e.g.:
-    // "https://your-app.netlify.app",
-    // "https://yourdomain.com"
+    "https://blog-app-orpin-six.vercel.app"
   ],
   credentials: true,
   optionsSuccessStatus: 200,
