@@ -1,5 +1,5 @@
 const express = require("express");
-const commentController = require("../controllers/comment");
+const commentController = require("../controllers/Comment");
 const auth = require("../auth");
 
 const { verify, verifyAdmin } = auth;
